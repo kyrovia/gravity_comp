@@ -8,8 +8,9 @@ int main() {
   using gct::toy::pd_control;
   using gct::toy::TwoLinkToyPlant;
 
-  std::cout << "Lab 1 style PD vs PD + gravity on the 2-link toy plant\n";
+  std::cout << "PD vs PD + gravity torque on two_link_toy plant\n";
 
+  //模拟仿真，运行400step，计算稳态误差
   auto run = [](bool use_gc) {
     TwoLinkToyPlant plant;
     VectorXd q_des(2);
