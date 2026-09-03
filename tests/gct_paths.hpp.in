@@ -1,0 +1,10 @@
+#pragma once
+
+// Generated at configure time for examples and tests. Not part of the
+// installed public API.
+namespace gct {
+
+inline constexpr char kDefaultUrdfPath[] = "@GCT_URDF_PATH@";
+inline constexpr char kDefaultMjScenePath[] = "@GCT_MJ_SCENE_PATH@";
+
+}  // namespace gct
