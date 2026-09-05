@@ -6,9 +6,8 @@
 #include <string>
 #include <vector>
 
-namespace gct {
+namespace gct::test {
 
-/// Lab 3 UR5e + Robotiq payload. Not part of the core library API.
 constexpr int kUr5eDofs = 6;
 
 inline constexpr std::array<const char*, kUr5eDofs> kUr5eJointNames = {
@@ -26,4 +25,4 @@ inline VectorXd ur5e_home() {
   return q;
 }
 
-}  // namespace gct
+}  // namespace gct::test
