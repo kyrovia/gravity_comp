@@ -30,6 +30,7 @@ UR5E_JOINTS = [
 
 Q_HOME = np.array([-np.pi / 2, -np.pi / 2, np.pi / 2, -np.pi / 2, -np.pi / 2, 0.0])
 NV = len(UR5E_JOINTS)
+START_KEYCODE = 32  # space
 
 MODE_HELP = {
     "no-gc": "无补偿 (tau=0)，机械臂会因重力下塌",
@@ -401,7 +402,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  Scene: {args.scene}")
     print(f"  dt={mj_model.opt.timestep}, duration={args.duration}s")
     print_banner(args, perturb, cfg)
-    print("  演示结束后窗口保持打开，请手动关闭窗口退出。")
+    print("  窗口打开后按空格开始；演示结束后请手动关闭窗口退出。")
 
     if args.mode == "compare":
         control = make_compare_controller(
@@ -424,11 +425,27 @@ def main(argv: list[str] | None = None) -> int:
             args.perturb_duration,
         )
 
-    with mujoco.viewer.launch_passive(mj_model, mj_data) as viewer:
+    sim_started = {"value": False}
+
+    def on_key(keycode: int) -> None:
+        if keycode == START_KEYCODE:
+            sim_started["value"] = True
+
+    with mujoco.viewer.launch_passive(
+        mj_model, mj_data, key_callback=on_key
+    ) as viewer:
         reset_state()
         viewer.cam.distance = 2.5
         viewer.cam.azimuth = 120
         viewer.cam.elevation = -20
+        print("  >> 按空格键开始仿真…")
+        while viewer.is_running() and not sim_started["value"]:
+            viewer.sync()
+            time.sleep(0.01)
+        if not viewer.is_running():
+            return 0
+
+        print("  >> 仿真开始")
         t0 = time.time()
         tail_steps = min(steps, max(1, int(round(0.1 / mj_model.opt.timestep))))
         tail_time = tail_steps * mj_model.opt.timestep
