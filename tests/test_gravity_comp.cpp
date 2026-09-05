@@ -1,26 +1,24 @@
 #include "gct/gravity_compensator.hpp"
 #include "gct/pin_model.hpp"
-#include "ur5e.hpp"
-
-#include "gct_paths.hpp"
+#include "ur5e_fixture.hpp"
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 using gct::CompensatorConfig;
 using gct::GravityCompensator;
-using gct::kDefaultUrdfPath;
-using gct::kUr5eDofs;
 using gct::PinModel;
-using gct::ur5e_home;
 using gct::VectorXd;
+using gct::test::kUr5eDofs;
+using gct::test::ur5e_home;
 
 namespace {
 
-PinModel load_ur5e() { return PinModel(std::string(kDefaultUrdfPath)); }
+PinModel load_ur5e() { return PinModel(GCT_TEST_MODEL_PATH); }
 
 }  // namespace
 
@@ -46,7 +44,7 @@ TEST_CASE("gravity is RNEA at zero velocity and acceleration") {
 
 TEST_CASE("joint names match the UR5e arm") {
   const PinModel pin = load_ur5e();
-  REQUIRE(pin.joint_names() == gct::ur5e_joint_names());
+  REQUIRE(pin.joint_names() == gct::test::ur5e_joint_names());
 }
 
 TEST_CASE("gravity_torque equals RNEA gravity when clipping is off") {
@@ -57,15 +55,24 @@ TEST_CASE("gravity_torque equals RNEA gravity when clipping is off") {
           1e-12);
 }
 
-TEST_CASE("clip respects URDF effort limits") {
+TEST_CASE("clip respects configured effort limits") {
   const PinModel pin = load_ur5e();
   CompensatorConfig cfg;
+  cfg.torque_limits =
+      (VectorXd(kUr5eDofs) << 150.0, 150.0, 150.0, 28.0, 28.0, 28.0)
+          .finished();
   cfg.clip_torque = true;
   GravityCompensator gc(pin, cfg);
-  const VectorXd limits = pin.torque_limits();
   VectorXd huge = VectorXd::Constant(pin.nv(), 1e6);
   const VectorXd clipped = gc.clip(huge);
-  REQUIRE((clipped - limits).cwiseAbs().maxCoeff() < 1e-12);
+  REQUIRE((clipped - cfg.torque_limits).cwiseAbs().maxCoeff() < 1e-12);
+}
+
+TEST_CASE("controller rejects state vectors with the wrong size") {
+  const PinModel pin = load_ur5e();
+  const GravityCompensator gc(pin);
+  const VectorXd short_q = VectorXd::Zero(pin.nq() - 1);
+  REQUIRE_THROWS_AS(gc.gravity_torque(short_q), std::invalid_argument);
 }
 
 TEST_CASE("position servo feedforward reconstructs PD + g at rest") {
