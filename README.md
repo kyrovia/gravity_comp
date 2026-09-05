@@ -1,121 +1,98 @@
 # gravity_comp
 
-从 `mujoco-robotics-lab` 抽出的重力补偿库（C++17）。工程主链路与常见力矩控制一致：
+基于 **Pinocchio RNEA** 的机械臂重力补偿库，提供纯重力前馈、PD + 重力补偿与位置伺服三种控制律，并可选 **MuJoCo** 仿真验证（UR5e）。
 
-```
-URDF/MJCF  →  Pinocchio  →  RNEA(q, 0, 0) = g(q)  →  τ_ff  →  关节力矩
-```
+## 核心特性
 
-- **动力学**：`PinModel::gravity(q)` 调用 `rnea(q, 0, 0)`，即零速度、零加速度下的逆动力学
-- **控制层**：`GravityCompensator` 把 \(g(q)\) 作为力矩前馈（可选 PD）
-- **仿真**（可选）：MuJoCo 力矩模式，用来验证前馈是否站得住
+- Pinocchio RNEA 重力前馈（`τ = g(q)`）
+- PD + 重力 / 位置伺服
+- MuJoCo UR5e 仿真验证（可选）
+- 交互式 viewer 演示
 
-核心库 `gct` 只依赖 Eigen + Pinocchio。MuJoCo 验证在 `gct_mujoco` 里，默认不构建；需要时使用 `-DGCT_ENABLE_MUJOCO=ON`。
+## 演示
 
-## 依赖
+| 无补偿（下塌） | PD + 重力补偿 |
+| :---: | :---: |
+| ![无补偿](assets/no_gc.gif) | ![PD + 重力补偿](assets/pd.gif) |
 
-| 组件 | 用途 |
-|---|---|
-| Eigen3 | 向量/矩阵 |
-| Pinocchio | URDF 建模，RNEA 算 \(g(q)\) |
-| MuJoCo 3.x | UR5e 仿真（可选） |
-| Catch2 | 测试 |
+| 重力 hold | 扰动 push |
+| :---: | :---: |
+| ![重力补偿 hold](assets/gravity_hold.gif) | ![push 扰动](assets/push.gif) |
 
-### Conda 环境
+## 快速开始
 
-需要先激活环境。CMake 读 `CONDA_PREFIX`，不再使用仓库里的 `.deps`。
+### 依赖
 
-```bash
-conda create -y -n gct -c conda-forge pinocchio eigen catch2 cxx-compiler
-conda activate gct
-```
+- C++17 编译器、CMake ≥ 3.16
+- [Eigen3](https://eigen.tuxfamily.org/)、[Pinocchio](https://stack-of-tasks.github.io/pinocchio/)
+- 可选（MuJoCo 仿真与 viewer）：[MuJoCo](https://mujoco.org/)、Python `mujoco` / `pinocchio`、`Catch2`
 
-`cxx-compiler` 用来和 conda 的 libstdc++ 对齐。MuJoCo 可以装在同一个环境里，或另外指定路径。
+推荐在已安装 Pinocchio 与 MuJoCo 的 Conda 环境中构建（CMake 会自动使用 `$CONDA_PREFIX`）。
 
-ROS 2 或其它 prefix：
+### 构建
 
 ```bash
-cmake -S . -B build -DGCT_PINOCCHIO_ROOT=/opt/ros/humble
-```
+git clone https://github.com/kyrovia/gravity_comp.git
+cd gravity_comp
 
-### MuJoCo
-
-任选其一：
-
-- 当前已激活环境里装了 MuJoCo wheel（读 `CONDA_PREFIX`）
-- `-DGCT_MUJOCO_ROOT=/path/to/mujoco`（含 `libmujoco` 和 `include/mujoco`）
-- 系统路径里能被 `find_library(mujoco)` 找到
-
-启用 MuJoCo 仿真：
-
-```bash
-cmake -S . -B build -DGCT_ENABLE_MUJOCO=ON
-```
-
-## 构建
-
-```bash
-conda activate gct
-cmake -S . -B build -DGCT_ENABLE_MUJOCO=ON
-cmake --build build -j
-ctest --test-dir build --output-on-failure
-```
-
-匹配的 MuJoCo 场景生成到 `build/models/ur5e_menagerie_torque.mjb`（来自 [MuJoCo Menagerie](https://github.com/google-deepmind/mujoco_menagerie) 的 `universal_robots_ur5e`）。首次构建前：
-
-```bash
+# MuJoCo 仿真需要 Menagerie UR5e 模型
 ./tools/setup_menagerie.sh
+
+cmake -B build -DGCT_ENABLE_MUJOCO=ON
+cmake --build build
 ```
 
-## 示例
+仅构建核心库（不含 MuJoCo）：
 
 ```bash
-# 场景模式 (--mode) × 控制律 (--law)
-python examples/ur5e_mujoco_viewer.py --mode hold --law gravity --real-time
-python examples/ur5e_mujoco_viewer.py --mode push --law pd --real-time
-python examples/ur5e_mujoco_viewer.py --mode push --law position-servo --real-time
-python examples/ur5e_mujoco_viewer.py --mode compare --real-time   # 固定 gravity 三阶段
-
-# 可选增益（默认 Kp=100, Kd=10，与 GravityCompensator 一致）
-python examples/ur5e_mujoco_viewer.py --mode push --law pd --kp 80,80,80,80,80,80 --kd 8,8,8,8,8,8 --real-time
-
-# CMake: ur5e_mujoco_viewer / _no_gc / _hold / _push
-#        ur5e_mujoco_viewer_pd / ur5e_mujoco_viewer_servo
+cmake -B build
+cmake --build build
 ```
 
-仓库只保留 MuJoCo 可视化示例。可用 `--urdf` / `--scene` 覆盖默认模型与场景路径。
+### 运行测试
 
-## API
+```bash
+cd build && ctest --output-on-failure
+```
+
+### 启动 MuJoCo 演示
+
+```bash
+cmake --build build --target ur5e_mujoco_viewer        # 依次演示三种模式
+cmake --build build --target ur5e_mujoco_viewer_hold   # 仅 hold
+cmake --build build --target ur5e_mujoco_viewer_push   # 扰动恢复
+```
+
+或直接运行 Python viewer：
+
+```bash
+python examples/ur5e_mujoco_viewer.py --mode compare --real-time
+```
+
+### 最小 API 示例
 
 ```cpp
 #include "gct/gravity_compensator.hpp"
 #include "gct/pin_model.hpp"
 
-gct::PinModel pin("/path/to/robot.urdf");
-gct::GravityCompensator gc(pin);
+gct::PinModel model("/path/to/robot.urdf");
+gct::GravityCompensator comp(model);
 
-gct::VectorXd tau = gc.gravity_torque(q);      // τ = RNEA(q, 0, 0)
-tau = gc.pd_plus_gravity(q, v, q_des, v_des);  // PD + g(q)
+const gct::VectorXd q = /* 当前关节角 */;
+const gct::VectorXd tau_g = comp.gravity_torque(q);           // τ = g(q)
+const gct::VectorXd tau_pd = comp.pd_plus_gravity(q, v, q_des, v_des);
 ```
 
-仿真验证（链接 `gct_mujoco`）：
+## 文档
 
-```cpp
-#include "gct_mujoco/arm_simulator.hpp"
-#include "gct_mujoco/gravity_validation.hpp"
+| 资源 | 说明 |
+|------|------|
+| [`include/gct/`](include/gct/) | 核心 API：`PinModel`、`GravityCompensator` |
+| [`include/gct_mujoco/`](include/gct_mujoco/) | MuJoCo 仿真与重力验证 API |
+| [`examples/ur5e_mujoco_viewer.py`](examples/ur5e_mujoco_viewer.py) | 交互式 UR5e 演示脚本 |
+| [Pinocchio 文档](https://stack-of-tasks.github.io/pinocchio/) | 动力学与 RNEA |
+| [MuJoCo Menagerie UR5e](https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e) | 仿真模型来源 |
 
-gct::mujoco::ArmSimulator simulator("/path/to/scene.mjb",
-                                    pin.joint_names());
-gct::mujoco::simulate_gravity_hold(simulator, gc, q);
-gct::mujoco::compare_gravity(pin, simulator, q);
-```
+## 许可证
 
-## 模型
-
-- `third_party/mujoco_menagerie/universal_robots_ur5e/` — 官方 MuJoCo Menagerie UR5e（网格 + 动力学）
-- `tests/fixtures/ur5e_fixture.hpp` — 仅测试使用的关节名与 home 配置
-- 构建时由 `tools/build_menagerie_torque_scene.py` 生成力矩模式场景
-
-## License
-
-Apache-2.0
+本项目采用 [Apache License 2.0](LICENSE) 发布。
