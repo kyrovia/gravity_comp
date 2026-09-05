@@ -1,4 +1,4 @@
-#include "gct/pin_model.hpp"
+#include "gravity_comp/pin_model.hpp"
 
 #include <pinocchio/algorithm/rnea.hpp>
 #include <pinocchio/multibody/data.hpp>
@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace gct {
+namespace gravity_comp {
 namespace {
 
 bool ends_with_ci(const std::string& path, const char* suffix) {
@@ -169,4 +169,4 @@ VectorXd PinModel::rnea(const VectorXd& q, const VectorXd& v,
   return pinocchio::rnea(impl_->model, impl_->data, q, v, a);
 }
 
-}  // namespace gct
+}  // namespace gravity_comp

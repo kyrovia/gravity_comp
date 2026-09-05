@@ -1,11 +1,11 @@
-#include "gct_mujoco/gravity_validation.hpp"
+#include "gravity_comp_mujoco/gravity_validation.hpp"
 
 #include <cmath>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 
-namespace gct::mujoco {
+namespace gravity_comp::mujoco {
 namespace {
 
 std::string join_names(const std::vector<std::string>& names) {
@@ -97,4 +97,4 @@ GravityHoldResult simulate_gravity_hold(
   return result;
 }
 
-}  // namespace gct::mujoco
+}  // namespace gravity_comp::mujoco

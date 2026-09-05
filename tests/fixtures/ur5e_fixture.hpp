@@ -1,12 +1,12 @@
 #pragma once
 
-#include "gct/types.hpp"
+#include "gravity_comp/types.hpp"
 
 #include <array>
 #include <string>
 #include <vector>
 
-namespace gct::test {
+namespace gravity_comp::test {
 
 constexpr int kUr5eDofs = 6;
 
@@ -25,4 +25,4 @@ inline VectorXd ur5e_home() {
   return q;
 }
 
-}  // namespace gct::test
+}  // namespace gravity_comp::test

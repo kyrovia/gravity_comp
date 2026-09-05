@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gct/pin_model.hpp"
+#include "gravity_comp/pin_model.hpp"
 
-namespace gct {
+namespace gravity_comp {
 
 struct CompensatorConfig {
   VectorXd kp;
@@ -39,4 +39,4 @@ class GravityCompensator {
   CompensatorConfig config_;
 };
 
-}  // namespace gct
+}  // namespace gravity_comp

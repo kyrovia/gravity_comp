@@ -38,7 +38,7 @@ cd gravity_comp
 # MuJoCo 仿真需要 Menagerie UR5e 模型
 ./tools/setup_menagerie.sh
 
-cmake -B build -DGCT_ENABLE_MUJOCO=ON
+cmake -B build -DGRAVITY_COMP_ENABLE_MUJOCO=ON
 cmake --build build
 ```
 
@@ -72,23 +72,23 @@ python examples/ur5e_mujoco_viewer.py --mode compare --real-time
 ### 最小 API 示例
 
 ```cpp
-#include "gct/gravity_compensator.hpp"
-#include "gct/pin_model.hpp"
+#include "gravity_comp/gravity_compensator.hpp"
+#include "gravity_comp/pin_model.hpp"
 
-gct::PinModel model("/path/to/robot.urdf");
-gct::GravityCompensator comp(model);
+gravity_comp::PinModel model("/path/to/robot.urdf");
+gravity_comp::GravityCompensator comp(model);
 
-const gct::VectorXd q = /* 当前关节角 */;
-const gct::VectorXd tau_g = comp.gravity_torque(q);           // τ = g(q)
-const gct::VectorXd tau_pd = comp.pd_plus_gravity(q, v, q_des, v_des);
+const gravity_comp::VectorXd q = /* 当前关节角 */;
+const gravity_comp::VectorXd tau_g = comp.gravity_torque(q);           // τ = g(q)
+const gravity_comp::VectorXd tau_pd = comp.pd_plus_gravity(q, v, q_des, v_des);
 ```
 
 ## 文档
 
 | 资源 | 说明 |
 |------|------|
-| [`include/gct/`](include/gct/) | 核心 API：`PinModel`、`GravityCompensator` |
-| [`include/gct_mujoco/`](include/gct_mujoco/) | MuJoCo 仿真与重力验证 API |
+| [`include/gravity_comp/`](include/gravity_comp/) | 核心 API：`PinModel`、`GravityCompensator` |
+| [`include/gravity_comp_mujoco/`](include/gravity_comp_mujoco/) | MuJoCo 仿真与重力验证 API |
 | [`examples/ur5e_mujoco_viewer.py`](examples/ur5e_mujoco_viewer.py) | 交互式 UR5e 演示脚本 |
 | [Pinocchio 文档](https://stack-of-tasks.github.io/pinocchio/) | 动力学与 RNEA |
 | [MuJoCo Menagerie UR5e](https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e) | 仿真模型来源 |

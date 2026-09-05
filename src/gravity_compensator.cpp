@@ -1,10 +1,10 @@
-#include "gct/gravity_compensator.hpp"
+#include "gravity_comp/gravity_compensator.hpp"
 
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-namespace gct {
+namespace gravity_comp {
 namespace {
 
 void fill_gains(VectorXd& gain, int nv, double fallback) {
@@ -119,4 +119,4 @@ VectorXd GravityCompensator::clip(const VectorXd& tau) const {
   return out;
 }
 
-}  // namespace gct
+}  // namespace gravity_comp

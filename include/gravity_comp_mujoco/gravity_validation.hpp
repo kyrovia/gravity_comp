@@ -1,13 +1,13 @@
 #pragma once
 
-#include "gct/gravity_compensator.hpp"
-#include "gct/pin_model.hpp"
-#include "gct/types.hpp"
-#include "gct_mujoco/arm_simulator.hpp"
+#include "gravity_comp/gravity_compensator.hpp"
+#include "gravity_comp/pin_model.hpp"
+#include "gravity_comp/types.hpp"
+#include "gravity_comp_mujoco/arm_simulator.hpp"
 
 #include <vector>
 
-namespace gct::mujoco {
+namespace gravity_comp::mujoco {
 
 struct GravityHoldResult {
   std::vector<double> time;
@@ -33,4 +33,4 @@ GravityHoldResult simulate_gravity_hold(
     ArmSimulator& simulator, const GravityCompensator& compensator,
     const VectorXd& initial_q, const GravityHoldOptions& options = {});
 
-}  // namespace gct::mujoco
+}  // namespace gravity_comp::mujoco
