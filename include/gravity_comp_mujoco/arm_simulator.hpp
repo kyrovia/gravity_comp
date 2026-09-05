@@ -1,12 +1,12 @@
 #pragma once
 
-#include "gct/types.hpp"
+#include "gravity_comp/types.hpp"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace gct::mujoco {
+namespace gravity_comp::mujoco {
 
 /// Torque-controlled MuJoCo plant for a named set of 1-DoF arm joints.
 class ArmSimulator {
@@ -44,4 +44,4 @@ class ArmSimulator {
   std::vector<int> actuator_ids_;
 };
 
-}  // namespace gct::mujoco
+}  // namespace gravity_comp::mujoco

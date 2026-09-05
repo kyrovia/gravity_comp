@@ -1,13 +1,13 @@
 #pragma once
 
-#include "gct/types.hpp"
+#include "gravity_comp/types.hpp"
 
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
 
-namespace gct {
+namespace gravity_comp {
 
 /// Uniform armature override for all joints. Omit (default) to keep values from
 /// the model file: MJCF joint armature, or URDF + companion SRDF rotor params.
@@ -48,4 +48,4 @@ class PinModel {
   std::string model_path_;
 };
 
-}  // namespace gct
+}  // namespace gravity_comp

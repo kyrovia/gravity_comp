@@ -1,7 +1,7 @@
-#include "gct/gravity_compensator.hpp"
-#include "gct/pin_model.hpp"
-#include "gct_mujoco/arm_simulator.hpp"
-#include "gct_mujoco/gravity_validation.hpp"
+#include "gravity_comp/gravity_compensator.hpp"
+#include "gravity_comp/pin_model.hpp"
+#include "gravity_comp_mujoco/arm_simulator.hpp"
+#include "gravity_comp_mujoco/gravity_validation.hpp"
 #include "ur5e_fixture.hpp"
 
 #include <catch2/catch_test_macros.hpp>
@@ -11,30 +11,30 @@
 #include <utility>
 #include <vector>
 
-using gct::GravityCompensator;
-using gct::PinModel;
-using gct::VectorXd;
-using gct::test::kUr5eDofs;
-using gct::test::ur5e_home;
-using gct::test::ur5e_joint_names;
-using gct::mujoco::ArmSimulator;
-using gct::mujoco::compare_gravity;
-using gct::mujoco::GravityHoldOptions;
-using gct::mujoco::simulate_gravity_hold;
+using gravity_comp::GravityCompensator;
+using gravity_comp::PinModel;
+using gravity_comp::VectorXd;
+using gravity_comp::test::kUr5eDofs;
+using gravity_comp::test::ur5e_home;
+using gravity_comp::test::ur5e_joint_names;
+using gravity_comp::mujoco::ArmSimulator;
+using gravity_comp::mujoco::compare_gravity;
+using gravity_comp::mujoco::GravityHoldOptions;
+using gravity_comp::mujoco::simulate_gravity_hold;
 
 namespace {
 
-PinModel load_ur5e() { return PinModel(GCT_TEST_MODEL_PATH); }
+PinModel load_ur5e() { return PinModel(GRAVITY_COMP_TEST_MODEL_PATH); }
 
 ArmSimulator load_mujoco() {
-  return ArmSimulator(GCT_TEST_MUJOCO_SCENE_PATH, ur5e_joint_names());
+  return ArmSimulator(GRAVITY_COMP_TEST_MUJOCO_SCENE_PATH, ur5e_joint_names());
 }
 
 }  // namespace
 
 TEST_CASE("unknown joint name is rejected") {
   REQUIRE_THROWS_AS(
-      ArmSimulator(GCT_TEST_MUJOCO_SCENE_PATH,
+      ArmSimulator(GRAVITY_COMP_TEST_MUJOCO_SCENE_PATH,
                    std::vector<std::string>{"not_a_joint"}),
       std::runtime_error);
 }
@@ -43,7 +43,7 @@ TEST_CASE("joint-name mismatch is rejected") {
   PinModel pin = load_ur5e();
   auto names = ur5e_joint_names();
   std::swap(names.front(), names.back());
-  ArmSimulator simulator(GCT_TEST_MUJOCO_SCENE_PATH, names);
+  ArmSimulator simulator(GRAVITY_COMP_TEST_MUJOCO_SCENE_PATH, names);
   REQUIRE_THROWS_AS(compare_gravity(pin, simulator, ur5e_home()),
                     std::invalid_argument);
 }

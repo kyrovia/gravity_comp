@@ -1,4 +1,4 @@
-#include "gct_mujoco/arm_simulator.hpp"
+#include "gravity_comp_mujoco/arm_simulator.hpp"
 
 #include <mujoco/mujoco.h>
 
@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-namespace gct::mujoco {
+namespace gravity_comp::mujoco {
 namespace {
 
 struct MjDataDeleter {
@@ -165,4 +165,4 @@ VectorXd ArmSimulator::gravity_torque() const {
   return gravity;
 }
 
-}  // namespace gct::mujoco
+}  // namespace gravity_comp::mujoco

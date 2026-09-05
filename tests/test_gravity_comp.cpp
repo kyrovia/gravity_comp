@@ -1,5 +1,5 @@
-#include "gct/gravity_compensator.hpp"
-#include "gct/pin_model.hpp"
+#include "gravity_comp/gravity_compensator.hpp"
+#include "gravity_comp/pin_model.hpp"
 #include "ur5e_fixture.hpp"
 
 #include <catch2/catch_approx.hpp>
@@ -9,16 +9,16 @@
 #include <string>
 #include <vector>
 
-using gct::CompensatorConfig;
-using gct::GravityCompensator;
-using gct::PinModel;
-using gct::VectorXd;
-using gct::test::kUr5eDofs;
-using gct::test::ur5e_home;
+using gravity_comp::CompensatorConfig;
+using gravity_comp::GravityCompensator;
+using gravity_comp::PinModel;
+using gravity_comp::VectorXd;
+using gravity_comp::test::kUr5eDofs;
+using gravity_comp::test::ur5e_home;
 
 namespace {
 
-PinModel load_ur5e() { return PinModel(GCT_TEST_MODEL_PATH); }
+PinModel load_ur5e() { return PinModel(GRAVITY_COMP_TEST_MODEL_PATH); }
 
 }  // namespace
 
@@ -44,7 +44,7 @@ TEST_CASE("gravity is RNEA at zero velocity and acceleration") {
 
 TEST_CASE("joint names match the UR5e arm") {
   const PinModel pin = load_ur5e();
-  REQUIRE(pin.joint_names() == gct::test::ur5e_joint_names());
+  REQUIRE(pin.joint_names() == gravity_comp::test::ur5e_joint_names());
 }
 
 TEST_CASE("gravity_torque equals RNEA gravity when clipping is off") {
