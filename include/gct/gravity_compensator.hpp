@@ -4,40 +4,39 @@
 
 namespace gct {
 
-struct CompensatorConfig{
-    VectorXd kp;
-    VectorXd kd;
-    bool clip_torque{true};
+struct CompensatorConfig {
+  VectorXd kp;
+  VectorXd kd;
+  /// Optional command limits. Empty uses limits supplied by the model.
+  VectorXd torque_limits;
+  /// When true, clip commanded torque to finite positive limits.
+  bool clip_torque{false};
 };
 
-class GravityCompensator{
-public:
-    /*
-    TODO
-    构造函数
-    查询model config
-    三种控制律，gravity,pd+gravity,position_servo
-    力矩限制
-    */
+/// Torque-mode gravity feedforward on top of Pinocchio RNEA.
+///
+/// Primary law is τ = g(q). PD + g is the usual tracking form.
+/// position_servo_command maps the same g(q) into a position-loop offset
+/// when the actuator is not in torque mode.
+class GravityCompensator {
+ public:
+  /// Stores an independent copy of the model and its computation workspace.
+  explicit GravityCompensator(const PinModel& model,
+                              CompensatorConfig config = {});
 
-    explicit GravityCompensator(const PinModel& model, const CompensatorConfig& config = {});
+  const PinModel& model() const { return model_; }
+  const CompensatorConfig& config() const { return config_; }
 
-    //const只读，&引用效率更高
-    const PinModel& model() const { return model_; }
-    const CompensatorConfig& config() const { return config_; }
+  VectorXd gravity_torque(const VectorXd& q) const;
+  VectorXd pd_plus_gravity(const VectorXd& q, const VectorXd& v,
+                           const VectorXd& q_des, const VectorXd& v_des) const;
+  VectorXd position_servo_command(const VectorXd& q, const VectorXd& q_des,
+                                  const VectorXd& v_des) const;
+  VectorXd clip(const VectorXd& tau) const;
 
-    VectorXd gravity_torque(const VectorXd& q) const;
-
-    VectorXd pd_plus_gravity(const VectorXd& q, const VectorXd& v, const VectorXd& q_des, const VectorXd& v_des) const;
-
-    //v_des作为前馈
-    VectorXd position_servo_command(const VectorXd& q, const VectorXd& q_des,
-        const VectorXd& v_des) const;
-
-    VectorXd clip_torque(const VectorXd& tau) const;
-
-private:
-    PinModel model_;
-    CompensatorConfig config_;
+ private:
+  PinModel model_;
+  CompensatorConfig config_;
 };
-}
+
+}  // namespace gct
